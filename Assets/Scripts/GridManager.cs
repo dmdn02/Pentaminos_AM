@@ -4,9 +4,13 @@ public class GridManager : MonoBehaviour
 {
     public static GridManager Instance;
 
-    public int width = 10;
-    public int height = 10;
-    public float cellSize = 1f;
+    public int width = 8;
+    public int height = 8;
+
+    [SerializeField]
+    private float cellSize = 1.05f;
+
+    public static float CellSize => Instance.cellSize;
 
     private void Awake()
     {
