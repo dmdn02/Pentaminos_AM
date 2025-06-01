@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PieceSelector : MonoBehaviour
 {
@@ -6,6 +8,7 @@ public class PieceSelector : MonoBehaviour
     public EstadoJogo estadoAtual = EstadoJogo.SelecionarPeca;
 
     public GameObject[] piecePrefabs;
+    private List<GameObject> pecasDisponiveis = new List<GameObject>();
     private int indiceAtual = 0;
     private GameObject pecaAtual;
 
@@ -19,6 +22,7 @@ public class PieceSelector : MonoBehaviour
 
     void Start()
     {
+        pecasDisponiveis = new List<GameObject>(piecePrefabs);
         AtualizarPecaVisual();
     }
 
@@ -57,7 +61,7 @@ public class PieceSelector : MonoBehaviour
         {
             if (pecaAtual == null || pecaAtual.transform == null)
             {
-                AtualizarPecaVisual(); // recria se tiver sido destruída
+                AtualizarPecaVisual();
             }
             AtualizarPosicaoPreview();
         }
@@ -65,9 +69,15 @@ public class PieceSelector : MonoBehaviour
 
     void AvancarPeca()
     {
+        if (pecasDisponiveis.Count == 0)
+        {
+            Debug.Log("Todas as peças já foram colocadas.");
+            return;
+        }
+
         gridX = 0;
         gridZ = 0;
-        indiceAtual = (indiceAtual + 1) % piecePrefabs.Length;
+        indiceAtual = (indiceAtual + 1) % pecasDisponiveis.Count;
         AtualizarPecaVisual();
     }
 
@@ -79,14 +89,10 @@ public class PieceSelector : MonoBehaviour
             pecaAtual = null;
         }
 
-        if (pontoSpawn == null)
-        {
-            Debug.LogWarning("pontoSpawn não está atribuído.");
-            return;
-        }
+        if (pontoSpawn == null || pecasDisponiveis.Count == 0) return;
 
         Quaternion rotacaoDeitada = Quaternion.Euler(90f, 0f, 0f);
-        pecaAtual = Instantiate(piecePrefabs[indiceAtual], pontoSpawn.position, rotacaoDeitada);
+        pecaAtual = Instantiate(pecasDisponiveis[indiceAtual], pontoSpawn.position, rotacaoDeitada);
         pecaAtual.tag = "PreviewPiece";
 
         Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
@@ -191,8 +197,25 @@ public class PieceSelector : MonoBehaviour
 
         pecaAtual.tag = "PlacedPiece";
         ultimaPecaColocada = pecaAtual;
+
+        // Remover prefab da lista disponível
+        if (indiceAtual >= 0 && indiceAtual < pecasDisponiveis.Count)
+        {
+            pecasDisponiveis.RemoveAt(indiceAtual);
+
+            if (pecasDisponiveis.Count == 0)
+            {
+                pecaAtual = null;
+                Debug.Log("Todas as peças foram colocadas.");
+                return;
+            }
+
+            indiceAtual %= pecasDisponiveis.Count;
+        }
+
         pecaAtual = null;
         estadoAtual = EstadoJogo.SelecionarPeca;
+        AtualizarPecaVisual();
     }
 
     void RemoverUltimaPeca()
@@ -201,7 +224,6 @@ public class PieceSelector : MonoBehaviour
 
         if (estadoAtual == EstadoJogo.SelecionarPeca)
         {
-            // Não apagar a peça atual, apenas prevenir e recriar se foi destruída
             if (pecaAtual == null || pecaAtual.transform == null)
             {
                 Debug.Log("Peça de pré-visualização não encontrada, a recriar...");
@@ -221,6 +243,15 @@ public class PieceSelector : MonoBehaviour
         }
 
         GameObject ultima = colocadas[colocadas.Length - 1];
+
+        // Repor peça na lista se existir nos prefabs originais
+        string nome = ultima.name.Replace("(Clone)", "").Trim();
+        GameObject prefabOriginal = piecePrefabs.FirstOrDefault(p => p.name == nome);
+        if (prefabOriginal != null && !pecasDisponiveis.Contains(prefabOriginal))
+        {
+            pecasDisponiveis.Add(prefabOriginal);
+        }
+
         Destroy(ultima);
 
         if (pecaAtual == ultima)
@@ -235,6 +266,4 @@ public class PieceSelector : MonoBehaviour
             AtualizarPecaVisual();
         }
     }
-
-
 }
