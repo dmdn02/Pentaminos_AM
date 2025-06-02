@@ -1,322 +1,274 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 public class PieceSelector : MonoBehaviour
 {
-    public enum EstadoJogo { SelecionarPeca, MoverPeca }
-    public EstadoJogo estadoAtual = EstadoJogo.SelecionarPeca;
-
     public GameObject[] piecePrefabs;
     private List<GameObject> pecasDisponiveis = new List<GameObject>();
-    private int indiceAtual = 0;
+
     private GameObject pecaAtual;
+    private int indicePecaAtual = 0;
 
     public Transform pontoSpawn;
 
     private int gridX = 0;
     private int gridZ = 0;
 
+    private float tempoMovimento = 0f;
+    private float delayMovimento = 0.2f;
+
+    private bool moverPeca = false;
+
     private GameObject ultimaPecaColocada;
-    private Material[] materiaisOriginais;
-    private float tempoEntreMovimentos = 0.2f; // intervalo entre movimentos (em segundos)
-    private float tempoDesdeUltimoMovimento = 0f;
 
     void Start()
     {
         pecasDisponiveis = new List<GameObject>(piecePrefabs);
-        AtualizarPecaVisual();
+        CriarPecaAtual();
     }
 
     void Update()
     {
-        // Atualiza o timer
-        tempoDesdeUltimoMovimento += Time.deltaTime;
-
-        // Se o Tab está pressionado e passou o tempo necessário desde o último movimento
-        if (Input.GetKey(KeyCode.Tab))
+        if (moverPeca)
         {
-            if (tempoDesdeUltimoMovimento >= tempoEntreMovimentos)
+            if (Input.GetKey(KeyCode.Tab) && Input.GetKey(KeyCode.Backspace))
             {
-                if (estadoAtual == EstadoJogo.SelecionarPeca)
+                tempoMovimento += Time.deltaTime;
+                if (tempoMovimento >= delayMovimento)
                 {
-                    AvancarPeca();
+                    tempoMovimento = 0f;
+                    RetrocederPosicao();
                 }
-                else if (estadoAtual == EstadoJogo.MoverPeca)
+            }
+            else if (Input.GetKey(KeyCode.Tab))
+            {
+                tempoMovimento += Time.deltaTime;
+                if (tempoMovimento >= delayMovimento)
                 {
-                    AvancarCelula();
+                    tempoMovimento = 0f;
+                    AvancarPosicao();
                 }
-
-                tempoDesdeUltimoMovimento = 0f;
             }
-        }
-
-        // Restantes inputs mantêm-se a reagir apenas ao pressionar (GetKeyDown)
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            if (estadoAtual == EstadoJogo.SelecionarPeca)
+            else
             {
-                estadoAtual = EstadoJogo.MoverPeca;
-            }
-            else if (estadoAtual == EstadoJogo.MoverPeca)
-            {
-                ColocarPeca();
-            }
-        }
+                tempoMovimento = delayMovimento;
 
-        if (Input.GetKeyDown(KeyCode.Backspace))
+                // Só roda a peça se estiver em modo mover, pressionar Backspace, e NÃO estiver a carregar Tab
+                if (Input.GetKeyDown(KeyCode.Backspace) && !Input.GetKey(KeyCode.Tab))
+                {
+                    RodarPeca();
+                }
+            }
+
+            AtualizarPosicaoPeca();
+        }
+        else
         {
-            if (estadoAtual == EstadoJogo.SelecionarPeca)
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                AvancarPeca();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Backspace))
             {
                 RemoverUltimaPeca();
             }
-            else if (estadoAtual == EstadoJogo.MoverPeca)
-            {
-                RodarPeca();
-            }
         }
 
-        if (estadoAtual == EstadoJogo.MoverPeca)
+        if (Input.GetKeyDown(KeyCode.Return))
         {
-            if (pecaAtual == null || pecaAtual.transform == null)
+            if (!moverPeca)
             {
-                AtualizarPecaVisual();
+                moverPeca = true;
+                gridX = 0;
+                gridZ = 0;
             }
-            AtualizarPosicaoPreview();
+            else
+            {
+                TentarColocarPeca();
+            }
         }
     }
 
+
+    void CriarPecaAtual()
+    {
+        if (pecaAtual != null) Destroy(pecaAtual);
+        if (pecasDisponiveis.Count == 0)
+        {
+            Debug.Log("Não há mais peças para jogar.");
+            return;
+        }
+        pecaAtual = Instantiate(pecasDisponiveis[indicePecaAtual], pontoSpawn.position, Quaternion.Euler(90, 0, 0));
+        pecaAtual.tag = "PreviewPiece";
+    }
 
     void AvancarPeca()
     {
-        if (pecasDisponiveis.Count == 0)
-        {
-            Debug.Log("Todas as peças já foram colocadas.");
-            return;
-        }
-
-        gridX = 0;
-        gridZ = 0;
-        indiceAtual = (indiceAtual + 1) % pecasDisponiveis.Count;
-        AtualizarPecaVisual();
+        if (pecasDisponiveis.Count == 0) return;
+        indicePecaAtual = (indicePecaAtual + 1) % pecasDisponiveis.Count;
+        CriarPecaAtual();
     }
 
-    void AtualizarPecaVisual()
+    void AvancarPosicao()
     {
-        if (pecaAtual != null && pecaAtual.transform != null)
+        int largura = GridManager.Instance.width;
+        int altura = GridManager.Instance.height;
+
+        for (int i = 1; i <= largura * altura; i++)
         {
-            Destroy(pecaAtual);
-            pecaAtual = null;
-        }
+            int proximaX = (gridX + i) % largura;
+            int proximaZ = (gridZ + (gridX + i) / largura) % altura;
 
-        if (pontoSpawn == null || pecasDisponiveis.Count == 0) return;
-
-        Quaternion rotacaoDeitada = Quaternion.Euler(90f, 0f, 0f);
-        pecaAtual = Instantiate(pecasDisponiveis[indiceAtual], pontoSpawn.position, rotacaoDeitada);
-        pecaAtual.tag = "PreviewPiece";
-
-        Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
-        materiaisOriginais = new Material[renderers.Length];
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            materiaisOriginais[i] = new Material(renderers[i].material);
-        }
-    }
-
-    void AvancarCelula()
-    {
-        gridX++;
-        if (gridX >= GridManager.Instance.width)
-        {
-            gridX = 0;
-            gridZ++;
-        }
-
-        if (gridZ >= GridManager.Instance.height)
-        {
-            gridZ = 0;
-        }
-    }
-
-    void AtualizarPosicaoPreview()
-    {
-        if (pecaAtual == null || pecaAtual.transform == null) return;
-
-        Vector3 basePos = GridManager.Instance.GetWorldPosition(gridX, gridZ);
-        float yTopo = 0.05f;
-        float alturaPeca = pecaAtual.GetComponentInChildren<Renderer>().bounds.size.y;
-        Vector3 finalPos = new Vector3(basePos.x, yTopo + alturaPeca / 2f, basePos.z);
-        pecaAtual.transform.position = finalPos;
-
-        // Verifica colisões por cada cubo (BoxCollider)
-        Collider[] colliders = pecaAtual.GetComponentsInChildren<Collider>();
-        bool encontrouColisao = false;
-
-        foreach (Collider c in colliders)
-        {
-            Vector3 centro = c.bounds.center;
-            Vector3 metade = c.bounds.extents * 0.95f;
-
-            Collider[] colisores = Physics.OverlapBox(centro, metade, c.transform.rotation);
-
-            foreach (Collider col in colisores)
+            if (PecaCabeNoTabuleiro(proximaX, proximaZ))
             {
-                if (col.transform.root == pecaAtual.transform) continue;
-
-                if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
-                {
-                    Debug.Log("Colisão com: " + col.name + " (tag: " + col.tag + ")");
-                    encontrouColisao = true;
-                    break;
-                }
-            }
-
-            if (encontrouColisao)
-                break;
-        }
-
-        // Atualiza a cor da peça inteira com base na colisão
-        Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            renderers[i].material.color = encontrouColisao ? Color.red : materiaisOriginais[i].color;
-        }
-    }
-
-
-
-    void ColocarPeca()
-    {
-        if (pecaAtual == null || pecaAtual.transform == null) return;
-
-        gridX = Mathf.Clamp(gridX, 0, GridManager.Instance.width - 1);
-        gridZ = Mathf.Clamp(gridZ, 0, GridManager.Instance.height - 1);
-
-        if (!GridManager.Instance.IsInsideGrid(gridX, gridZ))
-        {
-            Debug.Log("Posição base fora do tabuleiro.");
-            return;
-        }
-
-        // Verificar colisão em TODOS os cubos da peça
-        Collider[] colliders = pecaAtual.GetComponentsInChildren<Collider>();
-        bool encontrouColisao = false;
-
-        foreach (Collider c in colliders)
-        {
-            Vector3 centro = c.bounds.center;
-            Vector3 metade = c.bounds.extents * 0.95f;
-
-            Collider[] colisores = Physics.OverlapBox(centro, metade, c.transform.rotation);
-
-            foreach (Collider col in colisores)
-            {
-                if (col.transform.root == pecaAtual.transform) continue;
-
-                if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
-                {
-                    encontrouColisao = true;
-                    break;
-                }
-            }
-
-            if (encontrouColisao)
-                break;
-        }
-
-        if (encontrouColisao)
-        {
-            Debug.Log("Não podes colocar a peça aqui — colisão detectada.");
-            return;
-        }
-
-        // Colocação permitida
-        Vector3 basePos = GridManager.Instance.GetWorldPosition(gridX, gridZ);
-        float yTopo = 0.05f;
-        float alturaPeca = pecaAtual.GetComponentInChildren<Renderer>().bounds.size.y;
-        Vector3 finalPos = new Vector3(basePos.x, yTopo + alturaPeca / 2f, basePos.z);
-        pecaAtual.transform.position = finalPos;
-
-        // Marca toda a peça e os seus filhos com a tag "PlacedPiece"
-        pecaAtual.tag = "PlacedPiece";
-        foreach (Transform t in pecaAtual.GetComponentsInChildren<Transform>())
-        {
-            t.tag = "PlacedPiece";
-        }
-        ultimaPecaColocada = pecaAtual;
-
-        if (indiceAtual >= 0 && indiceAtual < pecasDisponiveis.Count)
-        {
-            pecasDisponiveis.RemoveAt(indiceAtual);
-            if (pecasDisponiveis.Count == 0)
-            {
-                pecaAtual = null;
-                Debug.Log("Todas as peças foram colocadas.");
+                gridX = proximaX;
+                gridZ = proximaZ;
                 return;
             }
-            indiceAtual %= pecasDisponiveis.Count;
+        }
+    }
+
+    bool PecaCabeNoTabuleiro(int x, int z)
+    {
+        if (pecaAtual == null) return false;
+
+        Vector3 posBase = GridManager.Instance.GetWorldPosition(x, z);
+        float yPos = 0.05f + GetAlturaPeca() / 2f;
+
+        foreach (Transform cubo in pecaAtual.transform)
+        {
+            Vector3 posCuboNoMundo = posBase + (cubo.localPosition);
+            int gridXDoCubo = Mathf.RoundToInt(posCuboNoMundo.x / GridManager.CellSize);
+            int gridZDoCubo = Mathf.RoundToInt(posCuboNoMundo.z / GridManager.CellSize);
+
+            if (!GridManager.Instance.IsInsideGrid(gridXDoCubo, gridZDoCubo))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void AtualizarPosicaoPeca()
+    {
+        if (pecaAtual == null) return;
+
+        Vector3 posBase = GridManager.Instance.GetWorldPosition(gridX, gridZ);
+        float yPos = 0.05f + GetAlturaPeca() / 2f;
+        pecaAtual.transform.position = new Vector3(posBase.x, yPos, posBase.z);
+    }
+
+    float GetAlturaPeca()
+    {
+        Renderer rend = pecaAtual.GetComponentInChildren<Renderer>();
+        if (rend != null) return rend.bounds.size.y;
+        return 1f;
+    }
+
+    void TentarColocarPeca()
+    {
+        if (!PecaCabeNoTabuleiro(gridX, gridZ))
+        {
+            Debug.Log("Peça não cabe no tabuleiro aqui!");
+            return;
+        }
+
+        if (VerificarColisao())
+        {
+            Debug.Log("Colisão detectada! Não podes colocar aqui.");
+            return;
+        }
+
+        // Colocar peça na cena, marca como colocada
+        pecaAtual.tag = "PlacedPiece";
+        ultimaPecaColocada = pecaAtual;
+
+        // Remove a peça da lista disponível e prepara para próxima
+        pecasDisponiveis.RemoveAt(indicePecaAtual);
+        if (pecasDisponiveis.Count == 0)
+        {
+            Debug.Log("Jogo terminado, não há mais peças.");
+            pecaAtual = null;
+            moverPeca = false;
+            return;
+        }
+        else
+        {
+            indicePecaAtual %= pecasDisponiveis.Count;
         }
 
         pecaAtual = null;
-        estadoAtual = EstadoJogo.SelecionarPeca;
-        AtualizarPecaVisual();
+        moverPeca = false;
+        CriarPecaAtual();
+    }
+
+    bool VerificarColisao()
+    {
+        Collider[] cubos = pecaAtual.GetComponentsInChildren<Collider>();
+        foreach (Collider c in cubos)
+        {
+            Vector3 centro = c.bounds.center;
+            Vector3 metade = c.bounds.extents * 0.9f;
+            Collider[] colisores = Physics.OverlapBox(centro, metade, c.transform.rotation);
+
+            foreach (Collider col in colisores)
+            {
+                if (col.transform.root == pecaAtual.transform) continue;
+                if (col.CompareTag("PlacedPiece") || col.CompareTag("Obstaculo"))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    void RetrocederPosicao()
+    {
+        int largura = GridManager.Instance.width;
+        int altura = GridManager.Instance.height;
+
+        for (int i = 1; i <= largura * altura; i++)
+        {
+            int index = ((gridZ * largura + gridX) - i + largura * altura) % (largura * altura);
+            int anteriorX = index % largura;
+            int anteriorZ = index / largura;
+
+            if (PecaCabeNoTabuleiro(anteriorX, anteriorZ))
+            {
+                gridX = anteriorX;
+                gridZ = anteriorZ;
+                return;
+            }
+        }
     }
 
 
     void RemoverUltimaPeca()
     {
-        GameObject[] colocadas = GameObject.FindGameObjectsWithTag("PlacedPiece");
-
-        if (estadoAtual == EstadoJogo.SelecionarPeca)
+        if (ultimaPecaColocada != null)
         {
-            if (pecaAtual == null || pecaAtual.transform == null)
-            {
-                Debug.Log("Peça de pré-visualização não encontrada, a recriar...");
-                AtualizarPecaVisual();
-            }
-            else
-            {
-                Debug.Log("Não podes apagar a peça atual de pré-visualização.");
-            }
-            return;
+            pecasDisponiveis.Add(ultimaPecaColocada);
+            Destroy(ultimaPecaColocada);
+            ultimaPecaColocada = null;
+            CriarPecaAtual();
         }
-
-        if (colocadas.Length == 0)
+        else
         {
-            Debug.Log("Não há peças no tabuleiro para remover.");
-            return;
-        }
-
-        GameObject ultima = colocadas[colocadas.Length - 1];
-
-        // Repor peça na lista se existir nos prefabs originais
-        string nome = ultima.name.Replace("(Clone)", "").Trim();
-        GameObject prefabOriginal = piecePrefabs.FirstOrDefault(p => p.name == nome);
-        if (prefabOriginal != null && !pecasDisponiveis.Contains(prefabOriginal))
-        {
-            pecasDisponiveis.Add(prefabOriginal);
-        }
-
-        Destroy(ultima);
-
-        if (pecaAtual == ultima)
-        {
-            pecaAtual = null;
-        }
-
-        estadoAtual = EstadoJogo.SelecionarPeca;
-
-        if (pecaAtual == null || pecaAtual.transform == null)
-        {
-            AtualizarPecaVisual();
+            Debug.Log("Não há peça para remover.");
         }
     }
 
     void RodarPeca()
     {
-        if (pecaAtual != null)
+        if (pecaAtual == null) return;
+
+        pecaAtual.transform.Rotate(0, 90, 0);
+
+        if (!PecaCabeNoTabuleiro(gridX, gridZ))
         {
-            pecaAtual.transform.Rotate(Vector3.up * 90f, Space.World);
+            pecaAtual.transform.Rotate(0, -90, 0);
+            Debug.Log("Rotação inválida - sairia fora do tabuleiro.");
         }
     }
 }
