@@ -166,6 +166,12 @@ public class PieceSelector : MonoBehaviour
 
     void TentarColocarPeca()
     {
+        if (!PecaCabeNoTabuleiro())
+        {
+            Debug.Log("A peça não está totalmente dentro do tabuleiro.");
+            return;
+        }
+
         if (VerificarColisao())
         {
             Debug.Log("Colisão detectada! Não podes colocar aqui.");
@@ -264,27 +270,23 @@ public class PieceSelector : MonoBehaviour
         pecaAtual.transform.Rotate(Vector3.up * 90f, Space.World);
     }
 
-    bool PecaCabeNoTabuleiro(int x, int z)
+    bool PecaCabeNoTabuleiro()
     {
         if (pecaAtual == null) return false;
 
-        Vector3 posBase = GridManager.Instance.GetWorldPosition(x, z);
-        float yPos = 0.05f + GetAlturaPeca() / 2f;
-        pecaAtual.transform.position = new Vector3(posBase.x, yPos, posBase.z);
-
         foreach (Transform cubo in pecaAtual.transform)
         {
-            Vector3 pos = cubo.position;
-            int gx = Mathf.FloorToInt(pos.x / GridManager.CellSize);
-            int gz = Mathf.FloorToInt(pos.z / GridManager.CellSize);
+            Vector3 posCubo = cubo.position;
+            int gridXDoCubo = Mathf.FloorToInt(posCubo.x / GridManager.CellSize);
+            int gridZDoCubo = Mathf.FloorToInt(posCubo.z / GridManager.CellSize);
 
-            if (!GridManager.Instance.IsInsideGrid(gx, gz))
+            if (!GridManager.Instance.IsInsideGrid(gridXDoCubo, gridZDoCubo))
             {
-                Debug.Log($" Cubo fora do tabuleiro em grid ({gx},{gz})");
                 return false;
             }
         }
 
         return true;
     }
+
 }

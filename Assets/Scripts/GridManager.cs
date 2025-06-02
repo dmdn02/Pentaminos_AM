@@ -8,7 +8,7 @@ public class GridManager : MonoBehaviour
     public int height = 8;
 
     [SerializeField]
-    private float cellSize = 1.05f;
+    public float cellSize = 1.05f;
 
     public static float CellSize => Instance.cellSize;
 
