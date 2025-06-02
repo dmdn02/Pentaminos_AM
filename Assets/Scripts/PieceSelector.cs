@@ -19,6 +19,8 @@ public class PieceSelector : MonoBehaviour
 
     private GameObject ultimaPecaColocada;
     private Material[] materiaisOriginais;
+    private float tempoEntreMovimentos = 0.2f; // intervalo entre movimentos (em segundos)
+    private float tempoDesdeUltimoMovimento = 0f;
 
     void Start()
     {
@@ -28,18 +30,28 @@ public class PieceSelector : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        // Atualiza o timer
+        tempoDesdeUltimoMovimento += Time.deltaTime;
+
+        // Se o Tab está pressionado e passou o tempo necessário desde o último movimento
+        if (Input.GetKey(KeyCode.Tab))
         {
-            if (estadoAtual == EstadoJogo.SelecionarPeca)
+            if (tempoDesdeUltimoMovimento >= tempoEntreMovimentos)
             {
-                AvancarPeca();
-            }
-            else if (estadoAtual == EstadoJogo.MoverPeca)
-            {
-                AvancarCelula();
+                if (estadoAtual == EstadoJogo.SelecionarPeca)
+                {
+                    AvancarPeca();
+                }
+                else if (estadoAtual == EstadoJogo.MoverPeca)
+                {
+                    AvancarCelula();
+                }
+
+                tempoDesdeUltimoMovimento = 0f;
             }
         }
 
+        // Restantes inputs mantêm-se a reagir apenas ao pressionar (GetKeyDown)
         if (Input.GetKeyDown(KeyCode.Return))
         {
             if (estadoAtual == EstadoJogo.SelecionarPeca)
@@ -73,6 +85,7 @@ public class PieceSelector : MonoBehaviour
             AtualizarPosicaoPreview();
         }
     }
+
 
     void AvancarPeca()
     {

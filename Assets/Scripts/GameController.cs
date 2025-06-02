@@ -11,15 +11,19 @@ public class GameController : MonoBehaviour
     public TextMeshProUGUI textoTempo;
     public TextMeshProUGUI textoPontos;
 
-    private int pecasNoInicio = 0;
-
     public int totalPecasParaVitoria = 12;
+
+    private int cubosContados = 0;
+    private int pecasCompletasContadas = 0; // peças completas = cubos / 5
+    private int pontos = 0;
 
     void Start()
     {
         tempoAtual = tempoTotal;
-        pecasNoInicio = ContarPecasColocadas();
-        textoPontos.text = "Pontos: 0";
+        cubosContados = ContarCubosColocados();
+        pecasCompletasContadas = cubosContados / 5;
+        pontos = pecasCompletasContadas * 5; // pontos iniciais se houver peças já colocadas
+        textoPontos.text = $"Pontos: {pontos}";
     }
 
     void Update()
@@ -27,22 +31,25 @@ public class GameController : MonoBehaviour
         if (jogoTerminado) return;
 
         tempoAtual -= Time.deltaTime;
-        if (tempoAtual < 0f)
-            tempoAtual = 0f;
-
-        int pecasAtuais = ContarPecasColocadas();
-        int pecasColocadasAgora = pecasAtuais - pecasNoInicio;
-        if (pecasColocadasAgora < 0)
-            pecasColocadasAgora = 0;
-
-        int pontos = pecasColocadasAgora * 5;
-        textoPontos.text = $"Pontos: {pontos}";
+        if (tempoAtual < 0f) tempoAtual = 0f;
 
         int minutos = Mathf.FloorToInt(tempoAtual / 60);
         int segundos = Mathf.FloorToInt(tempoAtual % 60);
         textoTempo.text = $"Tempo: {minutos:00}:{segundos:00}";
 
-        if (pecasColocadasAgora >= totalPecasParaVitoria)
+        int cubosAtuais = ContarCubosColocados();
+        int pecasAtuais = cubosAtuais / 5;
+
+        if (pecasAtuais > pecasCompletasContadas)
+        {
+            int novasPecas = pecasAtuais - pecasCompletasContadas;
+            pontos += novasPecas * 5;
+            pecasCompletasContadas = pecasAtuais;
+            textoPontos.text = $"Pontos: {pontos}";
+            Debug.Log($"Nova peça completa! Peças: {pecasCompletasContadas}, Pontos: {pontos}");
+        }
+
+        if (pecasCompletasContadas >= totalPecasParaVitoria)
         {
             VerificarVitoria();
         }
@@ -73,19 +80,12 @@ public class GameController : MonoBehaviour
 
     void GuardarEstadoFinal()
     {
-        int pecasAtuais = ContarPecasColocadas();
-        int pecasColocadasAgora = pecasAtuais - pecasNoInicio;
-        if (pecasColocadasAgora < 0)
-            pecasColocadasAgora = 0;
-
-        int pontos = pecasColocadasAgora * 5;
         float tempoUsado = tempoTotal - tempoAtual;
-
         PlayerPrefs.SetInt("Pontos", pontos);
         PlayerPrefs.SetFloat("Tempo", tempoUsado);
     }
 
-    int ContarPecasColocadas()
+    int ContarCubosColocados()
     {
         return GameObject.FindGameObjectsWithTag("PlacedPiece").Length;
     }

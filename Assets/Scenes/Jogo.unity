@@ -769,6 +769,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quadradoPrefab: {fileID: 4214336214846585932, guid: 493f5a3354301254f83d51be5358ae84, type: 3}
+  laranjaPrefab: {fileID: 4214336214846585932, guid: e915dcbbb0944754ab6e70ce35500437, type: 3}
   linhas: 8
   colunas: 8
 --- !u!4 &239066786
@@ -810,7 +811,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370490795}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5, y: 0.5, z: 2.5}
+  m_LocalPosition: {x: -6, y: 0.5, z: 2.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
