@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class PieceSelector : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class PieceSelector : MonoBehaviour
     private bool moverPeca = false;
 
     private GameObject ultimaPecaColocada;
+    private Material[] materiaisOriginais;
 
     void Start()
     {
@@ -53,7 +55,6 @@ public class PieceSelector : MonoBehaviour
             {
                 tempoMovimento = delayMovimento;
 
-                // Só roda a peça se estiver em modo mover, pressionar Backspace, e NÃO estiver a carregar Tab
                 if (Input.GetKeyDown(KeyCode.Backspace) && !Input.GetKey(KeyCode.Tab))
                 {
                     RodarPeca();
@@ -61,6 +62,7 @@ public class PieceSelector : MonoBehaviour
             }
 
             AtualizarPosicaoPeca();
+            AtualizarCorDaPeca();
         }
         else
         {
@@ -90,7 +92,6 @@ public class PieceSelector : MonoBehaviour
         }
     }
 
-
     void CriarPecaAtual()
     {
         if (pecaAtual != null) Destroy(pecaAtual);
@@ -101,6 +102,13 @@ public class PieceSelector : MonoBehaviour
         }
         pecaAtual = Instantiate(pecasDisponiveis[indicePecaAtual], pontoSpawn.position, Quaternion.Euler(90, 0, 0));
         pecaAtual.tag = "PreviewPiece";
+
+        Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
+        materiaisOriginais = new Material[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            materiaisOriginais[i] = new Material(renderers[i].material);
+        }
     }
 
     void AvancarPeca()
@@ -112,43 +120,17 @@ public class PieceSelector : MonoBehaviour
 
     void AvancarPosicao()
     {
-        int largura = GridManager.Instance.width;
-        int altura = GridManager.Instance.height;
-
-        for (int i = 1; i <= largura * altura; i++)
+        gridX++;
+        if (gridX > 7)
         {
-            int proximaX = (gridX + i) % largura;
-            int proximaZ = (gridZ + (gridX + i) / largura) % altura;
-
-            if (PecaCabeNoTabuleiro(proximaX, proximaZ))
-            {
-                gridX = proximaX;
-                gridZ = proximaZ;
-                return;
-            }
+            gridX = 0;
+            gridZ++;
         }
-    }
-
-    bool PecaCabeNoTabuleiro(int x, int z)
-    {
-        if (pecaAtual == null) return false;
-
-        Vector3 posBase = GridManager.Instance.GetWorldPosition(x, z);
-        float yPos = 0.05f + GetAlturaPeca() / 2f;
-
-        foreach (Transform cubo in pecaAtual.transform)
+        if (gridZ > 7)
         {
-            Vector3 posCuboNoMundo = posBase + (cubo.localPosition);
-            int gridXDoCubo = Mathf.RoundToInt(posCuboNoMundo.x / GridManager.CellSize);
-            int gridZDoCubo = Mathf.RoundToInt(posCuboNoMundo.z / GridManager.CellSize);
-
-            if (!GridManager.Instance.IsInsideGrid(gridXDoCubo, gridZDoCubo))
-            {
-                return false;
-            }
+            gridX = 0;
+            gridZ = 0;
         }
-
-        return true;
     }
 
     void AtualizarPosicaoPeca()
@@ -167,26 +149,38 @@ public class PieceSelector : MonoBehaviour
         return 1f;
     }
 
+    void AtualizarCorDaPeca()
+    {
+        Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
+        if (VerificarColisao())
+        {
+            foreach (Renderer rend in renderers)
+                rend.material.color = Color.red;
+        }
+        else
+        {
+            for (int i = 0; i < renderers.Length; i++)
+                renderers[i].material.color = materiaisOriginais[i].color;
+        }
+    }
+
     void TentarColocarPeca()
     {
-        if (!PecaCabeNoTabuleiro(gridX, gridZ))
-        {
-            Debug.Log("Peça não cabe no tabuleiro aqui!");
-            return;
-        }
-
         if (VerificarColisao())
         {
             Debug.Log("Colisão detectada! Não podes colocar aqui.");
             return;
         }
 
-        // Colocar peça na cena, marca como colocada
         pecaAtual.tag = "PlacedPiece";
-        ultimaPecaColocada = pecaAtual;
+        foreach (Transform t in pecaAtual.GetComponentsInChildren<Transform>())
+        {
+            t.tag = "PlacedPiece";
+        }
 
-        // Remove a peça da lista disponível e prepara para próxima
+        ultimaPecaColocada = pecaAtual;
         pecasDisponiveis.RemoveAt(indicePecaAtual);
+
         if (pecasDisponiveis.Count == 0)
         {
             Debug.Log("Jogo terminado, não há mais peças.");
@@ -225,33 +219,37 @@ public class PieceSelector : MonoBehaviour
 
     void RetrocederPosicao()
     {
-        int largura = GridManager.Instance.width;
-        int altura = GridManager.Instance.height;
-
-        for (int i = 1; i <= largura * altura; i++)
+        gridX--;
+        if (gridX < 0)
         {
-            int index = ((gridZ * largura + gridX) - i + largura * altura) % (largura * altura);
-            int anteriorX = index % largura;
-            int anteriorZ = index / largura;
-
-            if (PecaCabeNoTabuleiro(anteriorX, anteriorZ))
-            {
-                gridX = anteriorX;
-                gridZ = anteriorZ;
-                return;
-            }
+            gridX = 7;
+            gridZ--;
+        }
+        if (gridZ < 0)
+        {
+            gridX = 7;
+            gridZ = 7;
         }
     }
-
 
     void RemoverUltimaPeca()
     {
         if (ultimaPecaColocada != null)
         {
-            pecasDisponiveis.Add(ultimaPecaColocada);
+            // Recuperar nome original da peça (sem o (Clone))
+            string nome = ultimaPecaColocada.name.Replace("(Clone)", "").Trim();
+
+            // Procurar o prefab original
+            GameObject prefabOriginal = piecePrefabs.FirstOrDefault(p => p.name == nome);
+
+            if (prefabOriginal != null && !pecasDisponiveis.Contains(prefabOriginal))
+            {
+                pecasDisponiveis.Add(prefabOriginal);
+            }
+
             Destroy(ultimaPecaColocada);
             ultimaPecaColocada = null;
-            CriarPecaAtual();
+            CriarPecaAtual(); // Atualiza a visualização
         }
         else
         {
@@ -259,16 +257,34 @@ public class PieceSelector : MonoBehaviour
         }
     }
 
+
     void RodarPeca()
     {
         if (pecaAtual == null) return;
+        pecaAtual.transform.Rotate(Vector3.up * 90f, Space.World);
+    }
 
-        pecaAtual.transform.Rotate(0, 90, 0);
+    bool PecaCabeNoTabuleiro(int x, int z)
+    {
+        if (pecaAtual == null) return false;
 
-        if (!PecaCabeNoTabuleiro(gridX, gridZ))
+        Vector3 posBase = GridManager.Instance.GetWorldPosition(x, z);
+        float yPos = 0.05f + GetAlturaPeca() / 2f;
+        pecaAtual.transform.position = new Vector3(posBase.x, yPos, posBase.z);
+
+        foreach (Transform cubo in pecaAtual.transform)
         {
-            pecaAtual.transform.Rotate(0, -90, 0);
-            Debug.Log("Rotação inválida - sairia fora do tabuleiro.");
+            Vector3 pos = cubo.position;
+            int gx = Mathf.FloorToInt(pos.x / GridManager.CellSize);
+            int gz = Mathf.FloorToInt(pos.z / GridManager.CellSize);
+
+            if (!GridManager.Instance.IsInsideGrid(gx, gz))
+            {
+                Debug.Log($" Cubo fora do tabuleiro em grid ({gx},{gz})");
+                return false;
+            }
         }
+
+        return true;
     }
 }

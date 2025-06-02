@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections.Generic;
 
 public class GameController : MonoBehaviour
 {
@@ -13,16 +14,14 @@ public class GameController : MonoBehaviour
 
     public int totalPecasParaVitoria = 12;
 
-    private int cubosContados = 0;
-    private int pecasCompletasContadas = 0; // peças completas = cubos / 5
+    private int pecasCompletasContadas = 0;
     private int pontos = 0;
 
     void Start()
     {
         tempoAtual = tempoTotal;
-        cubosContados = ContarCubosColocados();
-        pecasCompletasContadas = cubosContados / 5;
-        pontos = pecasCompletasContadas * 5; // pontos iniciais se houver peças já colocadas
+        pecasCompletasContadas = 0;
+        pontos = 0;
         textoPontos.text = $"Pontos: {pontos}";
     }
 
@@ -37,8 +36,7 @@ public class GameController : MonoBehaviour
         int segundos = Mathf.FloorToInt(tempoAtual % 60);
         textoTempo.text = $"Tempo: {minutos:00}:{segundos:00}";
 
-        int cubosAtuais = ContarCubosColocados();
-        int pecasAtuais = cubosAtuais / 5;
+        int pecasAtuais = ContarPecasColocadas();
 
         if (pecasAtuais > pecasCompletasContadas)
         {
@@ -85,8 +83,16 @@ public class GameController : MonoBehaviour
         PlayerPrefs.SetFloat("Tempo", tempoUsado);
     }
 
-    int ContarCubosColocados()
+    int ContarPecasColocadas()
     {
-        return GameObject.FindGameObjectsWithTag("PlacedPiece").Length;
+        GameObject[] colocadas = GameObject.FindGameObjectsWithTag("PlacedPiece");
+        HashSet<Transform> pecasUnicas = new HashSet<Transform>();
+
+        foreach (GameObject go in colocadas)
+        {
+            pecasUnicas.Add(go.transform.root);
+        }
+
+        return pecasUnicas.Count;
     }
 }

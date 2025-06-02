@@ -798,7 +798,7 @@ GameObject:
   - component: {fileID: 370490796}
   m_Layer: 0
   m_Name: PieceSpawnPoint
-  m_TagString: PlacedPiece
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1542,7 +1542,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afbe714c522557042ab5ddd31ab581e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  estadoAtual: 0
   piecePrefabs:
   - {fileID: 5539916036819343941, guid: 681cb4e4e99c7ef47b70728ccc486024, type: 3}
   - {fileID: 1978711477796261105, guid: 2998a2cfb4a6ce046a15416c216017a6, type: 3}
