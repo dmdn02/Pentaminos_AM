@@ -1262,7 +1262,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1630397784}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1660096540}
+        m_TargetAssemblyTypeName: menuInicial, Assembly-CSharp
+        m_MethodName: AbrirInstrucoes
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1630397784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1422,8 +1434,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   botoes:
   - {fileID: 1106700402}
-  - {fileID: 1769375607}
   - {fileID: 1630397783}
+  - {fileID: 1769375607}
   - {fileID: 1311514428}
   corNormal: {r: 0.86, g: 0.22, b: 0.22, a: 1}
   corSelecionado: {r: 0.9490197, g: 0.97647065, b: 0.7137255, a: 0.91764706}
@@ -1510,7 +1522,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1769375608}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1660096540}
+        m_TargetAssemblyTypeName: menuInicial, Assembly-CSharp
+        m_MethodName: ToggleSom
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1769375608
 MonoBehaviour:
   m_ObjectHideFlags: 0

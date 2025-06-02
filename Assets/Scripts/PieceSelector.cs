@@ -54,7 +54,14 @@ public class PieceSelector : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Backspace))
         {
-            RemoverUltimaPeca();
+            if (estadoAtual == EstadoJogo.SelecionarPeca)
+            {
+                RemoverUltimaPeca();
+            }
+            else if (estadoAtual == EstadoJogo.MoverPeca)
+            {
+                RodarPeca();
+            }
         }
 
         if (estadoAtual == EstadoJogo.MoverPeca)
@@ -128,33 +135,42 @@ public class PieceSelector : MonoBehaviour
         Vector3 finalPos = new Vector3(basePos.x, yTopo + alturaPeca / 2f, basePos.z);
         pecaAtual.transform.position = finalPos;
 
-        Bounds bounds = pecaAtual.GetComponentInChildren<Renderer>().bounds;
-        Vector3 extentsReduzidos = bounds.extents * 0.9f;
+        // Verifica colisões por cada cubo (BoxCollider)
+        Collider[] colliders = pecaAtual.GetComponentsInChildren<Collider>();
+        bool encontrouColisao = false;
 
-        Collider[] colisores = Physics.OverlapBox(
-            bounds.center,
-            extentsReduzidos,
-            pecaAtual.transform.rotation
-        );
-
-        bool encontrouObstaculo = false;
-
-        foreach (Collider col in colisores)
+        foreach (Collider c in colliders)
         {
-            if (col.transform.root == pecaAtual.transform) continue;
-            if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
+            Vector3 centro = c.bounds.center;
+            Vector3 metade = c.bounds.extents * 0.95f;
+
+            Collider[] colisores = Physics.OverlapBox(centro, metade, c.transform.rotation);
+
+            foreach (Collider col in colisores)
             {
-                encontrouObstaculo = true;
-                break;
+                if (col.transform.root == pecaAtual.transform) continue;
+
+                if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
+                {
+                    Debug.Log("Colisão com: " + col.name + " (tag: " + col.tag + ")");
+                    encontrouColisao = true;
+                    break;
+                }
             }
+
+            if (encontrouColisao)
+                break;
         }
 
+        // Atualiza a cor da peça inteira com base na colisão
         Renderer[] renderers = pecaAtual.GetComponentsInChildren<Renderer>();
         for (int i = 0; i < renderers.Length; i++)
         {
-            renderers[i].material.color = encontrouObstaculo ? Color.red : materiaisOriginais[i].color;
+            renderers[i].material.color = encontrouColisao ? Color.red : materiaisOriginais[i].color;
         }
     }
+
+
 
     void ColocarPeca()
     {
@@ -169,47 +185,62 @@ public class PieceSelector : MonoBehaviour
             return;
         }
 
-        Bounds bounds = pecaAtual.GetComponentInChildren<Renderer>().bounds;
-        Vector3 extentsReduzidos = bounds.extents * 0.9f;
+        // Verificar colisão em TODOS os cubos da peça
+        Collider[] colliders = pecaAtual.GetComponentsInChildren<Collider>();
+        bool encontrouColisao = false;
 
-        Collider[] colisores = Physics.OverlapBox(
-            bounds.center,
-            extentsReduzidos,
-            pecaAtual.transform.rotation
-        );
-
-        foreach (Collider col in colisores)
+        foreach (Collider c in colliders)
         {
-            if (col.transform.root == pecaAtual.transform) continue;
-            if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
+            Vector3 centro = c.bounds.center;
+            Vector3 metade = c.bounds.extents * 0.95f;
+
+            Collider[] colisores = Physics.OverlapBox(centro, metade, c.transform.rotation);
+
+            foreach (Collider col in colisores)
             {
-                Debug.Log("Não podes colocar a peça aqui — espaço ocupado.");
-                AtualizarPosicaoPreview();
-                return;
+                if (col.transform.root == pecaAtual.transform) continue;
+
+                if (col.CompareTag("Obstaculo") || col.CompareTag("PlacedPiece"))
+                {
+                    encontrouColisao = true;
+                    break;
+                }
             }
+
+            if (encontrouColisao)
+                break;
         }
 
+        if (encontrouColisao)
+        {
+            Debug.Log("Não podes colocar a peça aqui — colisão detectada.");
+            return;
+        }
+
+        // Colocação permitida
         Vector3 basePos = GridManager.Instance.GetWorldPosition(gridX, gridZ);
         float yTopo = 0.05f;
         float alturaPeca = pecaAtual.GetComponentInChildren<Renderer>().bounds.size.y;
         Vector3 finalPos = new Vector3(basePos.x, yTopo + alturaPeca / 2f, basePos.z);
         pecaAtual.transform.position = finalPos;
 
+        // Marca toda a peça e os seus filhos com a tag "PlacedPiece"
         pecaAtual.tag = "PlacedPiece";
+        foreach (Transform t in pecaAtual.GetComponentsInChildren<Transform>())
+        {
+            t.tag = "PlacedPiece";
+        }
         ultimaPecaColocada = pecaAtual;
 
-        // Remover prefab da lista disponível
         if (indiceAtual >= 0 && indiceAtual < pecasDisponiveis.Count)
         {
             pecasDisponiveis.RemoveAt(indiceAtual);
-
             if (pecasDisponiveis.Count == 0)
             {
                 pecaAtual = null;
                 Debug.Log("Todas as peças foram colocadas.");
                 return;
             }
-
             indiceAtual %= pecasDisponiveis.Count;
         }
 
@@ -217,6 +248,7 @@ public class PieceSelector : MonoBehaviour
         estadoAtual = EstadoJogo.SelecionarPeca;
         AtualizarPecaVisual();
     }
+
 
     void RemoverUltimaPeca()
     {
@@ -264,6 +296,14 @@ public class PieceSelector : MonoBehaviour
         if (pecaAtual == null || pecaAtual.transform == null)
         {
             AtualizarPecaVisual();
+        }
+    }
+
+    void RodarPeca()
+    {
+        if (pecaAtual != null)
+        {
+            pecaAtual.transform.Rotate(Vector3.up * 90f, Space.World);
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
-public class menuInicial : MonoBehaviour
+public class Instrucoes : MonoBehaviour
 {
     public List<Button> botoes; // Ordem: Jogar, Instruções, Som, Sair
     public Color corNormal = new Color(0.86f, 0.22f, 0.22f, 1f);       // Vermelho normal
@@ -15,8 +15,6 @@ public class menuInicial : MonoBehaviour
     void Start()
     {
         AtualizarSelecao();
-
-
     }
 
     void Update()
@@ -55,27 +53,6 @@ public class menuInicial : MonoBehaviour
         {
             EventSystem.current.SetSelectedGameObject(botoes[indiceAtual].gameObject);
         }
-    }
-
-    public void Jogar()
-    {
-        SceneManager.LoadScene("Jogo");
-    }
-
-    public void AbrirInstrucoes()
-    {
-        SceneManager.LoadScene("Instrucoes");
-    }
-
-    public void ToggleSom()
-    {
-        Debug.Log("Alternar som ainda não implementado.");
-    }
-
-    public void Sair()
-    {
-        Application.Quit();
-        Debug.Log("Jogo encerrado.");
     }
 
     public void VoltarAoMenu()
