@@ -831,11 +831,12 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tab - Avan\xE7a para a pr\xF3xima pe\xE7a (modo de sele\xE7\xE3o)/Pr\xF3xima
-    posi\xE7\xE3o (modo mover) \r\n\nTab + Backspace - Retrocede para a posi\xE7\xE3o
-    anterior (modo mover)\n\nBackspace - Roda a pe\xE7a 90\xB0 (modo mover) / Remove
-    a \xFAltima pe\xE7a colocada (modo sele\xE7\xE3o)\r\n\nEnter - Alterna entre
-    sele\xE7\xE3o e movimento da pe\xE7a / Coloca a pe\xE7a no tabuleiro"
+  m_text: "Tab : Avan\xE7a para a pr\xF3xima pe\xE7a (modo de sele\xE7\xE3o)/\n\tPr\xF3xima
+    posi\xE7\xE3o (modo mover) \r\n\nTab + Backspace : Retrocede para a posi\xE7\xE3o
+    anterior (modo mover)\n\nBackspace : Roda a pe\xE7a 90\xB0 (modo mover) \n\t\t  
+    Apaga a \xFAltima pe\xE7a colocada (modo sele\xE7\xE3o)\r\n\nEnter : Valida a
+    pe\xE7a Selecionanda (modo sele\xE7\xE3o)\n\t   Coloca a pe\xE7a no tabuleiro
+    (modo mover)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -862,8 +863,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 47
+  m_fontSizeBase: 47
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1033,6 +1034,7 @@ MonoBehaviour:
   - {fileID: 1311514428}
   corNormal: {r: 0.86, g: 0.22, b: 0.22, a: 1}
   corSelecionado: {r: 0.86, g: 0.22, b: 0.22, a: 0.3}
+  somTexto: {fileID: 0}
 --- !u!1 &2111401320
 GameObject:
   m_ObjectHideFlags: 0

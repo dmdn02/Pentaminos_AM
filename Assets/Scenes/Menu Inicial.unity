@@ -1580,9 +1580,7 @@ MonoBehaviour:
   - {fileID: 1311514428}
   corNormal: {r: 0.86, g: 0.22, b: 0.22, a: 1}
   corSelecionado: {r: 0.9490197, g: 0.97647065, b: 0.7137255, a: 0.91764706}
-  somImage: {fileID: 0}
-  SomON_icon: {fileID: 0}
-  SomOFF_icon: {fileID: 0}
+  somTexto: {fileID: 1200461171}
 --- !u!1 &1769375605
 GameObject:
   m_ObjectHideFlags: 0
