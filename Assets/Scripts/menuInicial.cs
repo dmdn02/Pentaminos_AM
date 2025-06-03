@@ -12,6 +12,11 @@ public class menuInicial : MonoBehaviour
 
     private int indiceAtual = 0;
 
+    [Header("Imagem de Som")]
+    public Image somImage;
+    public Sprite SomON_icon;
+    public Sprite SomOFF_icon;
+
     void Start()
     {
         AtualizarSelecao();
@@ -69,7 +74,24 @@ public class menuInicial : MonoBehaviour
 
     public void ToggleSom()
     {
-        Debug.Log("Alternar som ainda não implementado.");
+        Debug.Log("ToggleSom foi chamado.");
+        if (MusicaFundo.Instance == null)
+        {
+            Debug.LogError("MusicaFundo.Instance é NULL");
+            return;
+        }
+
+        MusicaFundo.Instance.AlternarSom();
+
+        AtualizarSomVisual();
+    }
+
+    void AtualizarSomVisual()
+    {
+        if (somImage != null)
+        {
+            somImage.sprite = MusicaFundo.Instance.EstaAtivo() ? SomON_icon : SomOFF_icon;
+        }
     }
 
     public void Sair()
