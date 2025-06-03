@@ -27,16 +27,49 @@ public class PieceSelector : MonoBehaviour
     private GameObject ultimaPecaColocada;
     private Material[] materiaisOriginais;
 
+    private float ultimoBackspacePressionado = 0f;
+    private float intervaloDuploBackspace = 0.5f; // tempo máximo entre dois Backspaces
+    private int contagemBackspace = 0;
+
+    private GameController gameController;
+
     void Start()
     {
         pecasDisponiveis = new List<GameObject>(piecePrefabs);
         CriarPecaAtual();
+
+        gameController = FindObjectOfType<GameController>();
     }
 
     void Update()
     {
         if (moverPeca)
         {
+            if (Input.GetKeyDown(KeyCode.Backspace))
+            {
+                float tempoAtual = Time.time;
+
+                if (tempoAtual - ultimoBackspacePressionado <= intervaloDuploBackspace)
+                {
+                    contagemBackspace++;
+
+                    if (contagemBackspace >= 2)
+                    {
+                        moverPeca = false;
+                        AtualizarPosicaoPeca();
+                        Debug.Log("Movimento cancelado com duplo TAB.");
+                        contagemBackspace = 0;
+                        return; // cancela o resto do processamento
+                    }
+                }
+                else
+                {
+                    contagemBackspace = 1;
+                }
+
+                ultimoBackspacePressionado = tempoAtual;
+            }
+
             if (Input.GetKey(KeyCode.Tab) && Input.GetKey(KeyCode.Backspace))
             {
                 tempoMovimento += Time.deltaTime;
@@ -213,6 +246,17 @@ public class PieceSelector : MonoBehaviour
         pecaAtual = null;
         moverPeca = false;
         CriarPecaAtual();
+
+        if (!AlgumaPecaCabeNoTabuleiro())
+        {
+            Debug.Log("Nenhuma peça cabe no tabuleiro. Derrota!");
+            if (gameController != null)
+            {
+                gameController.Derrota();
+            }
+            return;
+        }
+
         AlternarJogador();
     }
 
@@ -310,4 +354,55 @@ public class PieceSelector : MonoBehaviour
             textoJogadorAtual.text = "Jogador: " + jogadorAtual.ToString();
     }
 
+    bool AlgumaPecaCabeNoTabuleiro()
+    {
+        foreach (GameObject prefab in pecasDisponiveis)
+        {
+            // Tenta em todas as rotações
+            for (int rot = 0; rot < 4; rot++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    for (int z = 0; z < 8; z++)
+                    {
+                        GameObject temp = Instantiate(prefab, GridManager.Instance.GetWorldPosition(x, z), Quaternion.Euler(90, rot * 90, 0));
+                        temp.tag = "PreviewPiece";
+
+                        bool cabe = true;
+                        foreach (Transform cubo in temp.transform)
+                        {
+                            Vector3 pos = cubo.position;
+                            int gx = Mathf.FloorToInt(pos.x / GridManager.CellSize);
+                            int gz = Mathf.FloorToInt(pos.z / GridManager.CellSize);
+
+                            if (!GridManager.Instance.IsInsideGrid(gx, gz))
+                            {
+                                cabe = false;
+                                break;
+                            }
+
+                            Collider[] colisores = Physics.OverlapBox(cubo.position, cubo.GetComponent<Collider>().bounds.extents * 0.9f, cubo.rotation);
+                            foreach (Collider col in colisores)
+                            {
+                                if (col.CompareTag("PlacedPiece") || col.CompareTag("Obstaculo"))
+                                {
+                                    cabe = false;
+                                    break;
+                                }
+                            }
+
+                            if (!cabe) break;
+                        }
+
+                        Destroy(temp);
+
+                        if (cabe)
+                            return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 }

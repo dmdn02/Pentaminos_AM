@@ -455,7 +455,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -63}
+  m_AnchoredPosition: {x: 0, y: -33}
   m_SizeDelta: {x: 580, y: 121.9805}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &735784064
@@ -513,7 +513,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -676,7 +676,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -389}
+  m_AnchoredPosition: {x: 0, y: -438}
   m_SizeDelta: {x: 400, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1311514428
@@ -808,8 +808,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -184}
-  m_SizeDelta: {x: 1400, y: 1000}
+  m_AnchoredPosition: {x: 0, y: -205}
+  m_SizeDelta: {x: 1400, y: 1150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1514221225
 MonoBehaviour:
@@ -834,9 +834,9 @@ MonoBehaviour:
   m_text: "Tab : Avan\xE7a para a pr\xF3xima pe\xE7a (modo de sele\xE7\xE3o)/\n\tPr\xF3xima
     posi\xE7\xE3o (modo mover) \r\n\nTab + Backspace : Retrocede para a posi\xE7\xE3o
     anterior (modo mover)\n\nBackspace : Roda a pe\xE7a 90\xB0 (modo mover) \n\t\t  
-    Apaga a \xFAltima pe\xE7a colocada (modo sele\xE7\xE3o)\r\n\nEnter : Valida a
-    pe\xE7a Selecionanda (modo sele\xE7\xE3o)\n\t   Coloca a pe\xE7a no tabuleiro
-    (modo mover)"
+    Apaga a \xFAltima pe\xE7a colocada (modo sele\xE7\xE3o)\r\n\nBackspace x2 : Volta
+    ao selecionar pe\xE7a\n\nEnter : Valida a pe\xE7a Selecionanda (modo sele\xE7\xE3o)\n\t  
+    Coloca a pe\xE7a no tabuleiro (modo mover)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
