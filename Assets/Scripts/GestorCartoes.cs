@@ -18,7 +18,9 @@ public class GestorCartoes : MonoBehaviour
         foreach (Vector2Int pos in selecionado.posicoesBloqueadas)
         {
             Vector3 posMundo = GridManager.Instance.GetWorldPosition(pos.x, pos.y);
-            Instantiate(quadradoPretoPrefab, posMundo + Vector3.up * 0.05f, Quaternion.identity);
+            float altura = quadradoPretoPrefab.GetComponent<Renderer>()?.bounds.size.y ?? 0.1f;
+            Vector3 posComAltura = posMundo + Vector3.up * (altura / 2f);
+            Instantiate(quadradoPretoPrefab, posComAltura, Quaternion.identity);
         }
 
         Debug.Log($"Cartão sorteado: {selecionado.nome} (dado = {numeroDado})");

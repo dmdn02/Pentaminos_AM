@@ -5,22 +5,22 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - path: Assets/Scenes/Jogo.unity
-    guid: c9a100fdbf28b4594072e72b8655ab
-    enabled: 1
-  - path: Assets/Scenes/Menu Inicial.unity
-    guid: 5ddf55dad10d94a90cf978b4e79eff
-    enabled: 1
-  - path: Assets/Scenes/MenuPausa.unity
-    guid: e8913252f2b679145839232b535eec7
-    enabled: 1
-  - path: Assets/Scenes/Instrucoes.unity
-    guid: c9905f17cc4dea44b84a547ec79f8f56
-    enabled: 1
-  - path: Assets/Scenes/MenuVitoria.unity
-    guid: 74550efbfc29d842a0ddb7177d7d962
-    enabled: 1
-  - path: Assets/Scenes/MenuDerrota.unity
-    guid: 39eec5acc2e5814d095d09baba9aeeb4
-    enabled: 1
+  - enabled: 1
+    path: Assets/Scenes/Menu Inicial.unity
+    guid: 5dfd55da4d10d9d4a90cf978b4e79eff
+  - enabled: 1
+    path: Assets/Scenes/Instrucoes.unity
+    guid: c9905f17cc4dea448b4a547ee79f8f56
+  - enabled: 1
+    path: Assets/Scenes/Jogo.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/MenuPausa.unity
+    guid: e8913252f2b679145839322b535ee7c7
+  - enabled: 1
+    path: Assets/Scenes/MenuVitoria.unity
+    guid: 7455e0febfc29d842a0ddb7177d7d962
+  - enabled: 1
+    path: Assets/Scenes/MenuDerrota.unity
+    guid: 39eee5acc2e581d409d509bab9aeeb4a
   m_configObjects: {}
