@@ -10,19 +10,12 @@ public class GameController : MonoBehaviour
     private bool jogoTerminado = false;
 
     public TextMeshProUGUI textoTempo;
-    public TextMeshProUGUI textoPontos;
 
     public int totalPecasParaVitoria = 12;
-
-    private int pecasCompletasContadas = 0;
-    private int pontos = 0;
 
     void Start()
     {
         tempoAtual = tempoTotal;
-        pecasCompletasContadas = 0;
-        pontos = 0;
-        textoPontos.text = $"Pontos: {pontos}";
     }
 
     void Update()
@@ -36,18 +29,8 @@ public class GameController : MonoBehaviour
         int segundos = Mathf.FloorToInt(tempoAtual % 60);
         textoTempo.text = $"Tempo: {minutos:00}:{segundos:00}";
 
-        int pecasAtuais = ContarPecasColocadas();
 
-        if (pecasAtuais > pecasCompletasContadas)
-        {
-            int novasPecas = pecasAtuais - pecasCompletasContadas;
-            pontos += novasPecas * 5;
-            pecasCompletasContadas = pecasAtuais;
-            textoPontos.text = $"Pontos: {pontos}";
-            Debug.Log($"Nova peça completa! Peças: {pecasCompletasContadas}, Pontos: {pontos}");
-        }
-
-        if (pecasCompletasContadas >= totalPecasParaVitoria)
+        if (ContarPecasColocadas() >= totalPecasParaVitoria)
         {
             VerificarVitoria();
         }
@@ -79,7 +62,6 @@ public class GameController : MonoBehaviour
     void GuardarEstadoFinal()
     {
         float tempoUsado = tempoTotal - tempoAtual;
-        PlayerPrefs.SetInt("Pontos", pontos);
         PlayerPrefs.SetFloat("Tempo", tempoUsado);
     }
 

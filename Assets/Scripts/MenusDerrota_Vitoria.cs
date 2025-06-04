@@ -9,7 +9,6 @@ public class MenusDerrota_Vitoria : MonoBehaviour
 {
     public List<Button> botoes; // Ordem: Jogar Novamente, Menu Inicial
     public TextMeshProUGUI textoTempo;
-    public TextMeshProUGUI textoPontos;
 
     public Color corNormal = new Color(0.86f, 0.22f, 0.22f, 1f);        // Vermelho normal
     public Color corSelecionado = new Color(0.86f, 0.22f, 0.22f, 0.3f); // Vermelho transparente
@@ -24,11 +23,9 @@ public class MenusDerrota_Vitoria : MonoBehaviour
         botoes[0].onClick.AddListener(JogarNovamente);
         botoes[1].onClick.AddListener(Sair);
 
-        // Obter os pontos e tempo guardados no fim do jogo
-        int pontos = PlayerPrefs.GetInt("Pontos", 0);
+        // Obter tempo guardado no fim do jogo
         float tempo = PlayerPrefs.GetFloat("Tempo", 0f);
 
-        textoPontos.text = "Pontos: " + pontos.ToString();
         textoTempo.text = "Tempo: " + tempo.ToString("F1") + "s";
     }
 

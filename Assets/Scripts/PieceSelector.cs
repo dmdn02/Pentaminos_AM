@@ -4,10 +4,6 @@ using System.Linq;
 
 public class PieceSelector : MonoBehaviour
 {
-    public enum Jogador { Jogador1, Jogador2 }
-    private Jogador jogadorAtual = Jogador.Jogador1;
-    public TMPro.TextMeshProUGUI textoJogadorAtual;
-
     public GameObject[] piecePrefabs;
     private List<GameObject> pecasDisponiveis = new List<GameObject>();
 
@@ -146,13 +142,6 @@ public class PieceSelector : MonoBehaviour
         {
             materiaisOriginais[i] = new Material(renderers[i].material);
         }
-
-        Color corJogador = jogadorAtual == Jogador.Jogador1 ? Color.blue : Color.green;
-
-        foreach (Renderer rend in renderers)
-        {
-            rend.material.color = corJogador;
-        }
     }
 
     void AvancarPeca()
@@ -257,7 +246,6 @@ public class PieceSelector : MonoBehaviour
             return;
         }
 
-        AlternarJogador();
     }
 
     bool VerificarColisao()
@@ -343,15 +331,6 @@ public class PieceSelector : MonoBehaviour
         }
 
         return true;
-    }
-
-    void AlternarJogador()
-    {
-        jogadorAtual = jogadorAtual == Jogador.Jogador1 ? Jogador.Jogador2 : Jogador.Jogador1;
-        Debug.Log("Agora é a vez do " + jogadorAtual.ToString());
-
-        if (textoJogadorAtual != null)
-            textoJogadorAtual.text = "Jogador: " + jogadorAtual.ToString();
     }
 
     bool AlgumaPecaCabeNoTabuleiro()
