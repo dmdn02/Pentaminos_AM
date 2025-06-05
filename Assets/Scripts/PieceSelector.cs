@@ -321,11 +321,12 @@ public class PieceSelector : MonoBehaviour
         foreach (Transform cubo in pecaAtual.transform)
         {
             Vector3 posCubo = cubo.position;
-            int gridXDoCubo = Mathf.FloorToInt(posCubo.x / GridManager.CellSize);
-            int gridZDoCubo = Mathf.FloorToInt(posCubo.z / GridManager.CellSize);
+            int gridXDoCubo = Mathf.RoundToInt(posCubo.x / GridManager.CellSize);
+            int gridZDoCubo = Mathf.RoundToInt(posCubo.z / GridManager.CellSize);
 
             if (!GridManager.Instance.IsInsideGrid(gridXDoCubo, gridZDoCubo))
             {
+                Debug.Log($"Fora do tabuleiro em ({gridXDoCubo}, {gridZDoCubo})");
                 return false;
             }
         }

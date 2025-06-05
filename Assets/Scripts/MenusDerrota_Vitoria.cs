@@ -25,8 +25,9 @@ public class MenusDerrota_Vitoria : MonoBehaviour
 
         // Obter tempo guardado no fim do jogo
         float tempo = PlayerPrefs.GetFloat("Tempo", 0f);
-
-        textoTempo.text = "Tempo: " + tempo.ToString("F1") + "s";
+        int minutos = Mathf.FloorToInt(tempo / 60f);
+        int segundos = Mathf.FloorToInt(tempo % 60f);
+        textoTempo.text = $"Tempo: {minutos:00}:{segundos:00}";
     }
 
     void Update()
